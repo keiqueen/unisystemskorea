@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>UNISYSTEMS 사내 포털</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#E85420;
+  --orange-light:#F06B3A;
+  --navy:#1E2D4E;
+  --navy-dark:#111d35;
+  --navy-mid:#2A3F6B;
+  --white:#FFFFFF;
+  --bg:#F4F6FA;
+  --surface:#FFFFFF;
+  --border:#E2E8F0;
+  --text:#1E2D4E;
+  --muted:#64748B;
+  --light:#94A3B8;
+  --danger:#EF4444;
+  --success:#10B981;
+  --warning:#F59E0B;
+  --sidebar-w:240px;
+  --header-h:64px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ─── SCREEN MANAGER ─── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex}
+
+/* ═══════════════════════════════════
+   LOGIN
+═══════════════════════════════════ */
+#login-screen{align-items:center;justify-content:center;background:var(--navy-dark);position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(232,84,32,0.15) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 80% 70%,rgba(42,63,107,0.4) 0%,transparent 60%)}
+#login-screen::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:48px 48px}
+.login-box{position:relative;z-index:1;width:min(420px,92vw);animation:slideUp .6s cubic-bezier(.22,1,.36,1) both}
+.login-logo{display:flex;align-items:center;gap:14px;margin-bottom:40px;justify-content:center}
+.logo-mark{width:52px;height:52px;position:relative}
+.logo-mark svg{width:100%;height:100%}
+.logo-text-wrap{display:flex;flex-direction:column}
+.logo-en{font-size:1.6rem;font-weight:700;letter-spacing:.12em;color:#fff}
+.logo-ko{font-size:.75rem;font-weight:400;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-top:2px}
+.login-card{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px 36px;box-shadow:0 32px 64px rgba(0,0,0,.4)}
+.login-card h2{font-size:1rem;font-weight:500;color:rgba(255,255,255,.6);margin-bottom:28px;text-align:center;letter-spacing:.04em}
+.lf{margin-bottom:16px}
+.lf label{display:block;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:7px;letter-spacing:.06em;text-transform:uppercase}
+.lf input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;font-family:inherit;font-size:.92rem;padding:13px 15px;outline:none;transition:all .2s}
+.lf input::placeholder{color:rgba(255,255,255,.25)}
+.lf input:focus{border-color:var(--orange);background:rgba(232,84,32,.08);box-shadow:0 0 0 3px rgba(232,84,32,.15)}
+.lf input.err{border-color:var(--danger);background:rgba(239,68,68,.08)}
+.login-err{color:var(--danger);font-size:.8rem;margin-top:10px;text-align:center;min-height:20px}
+.btn-login{width:100%;margin-top:24px;padding:14px;background:var(--orange);border:none;border-radius:10px;color:#fff;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 4px 20px rgba(232,84,32,.4)}
+.btn-login:hover{background:var(--orange-light);transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,84,32,.5)}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════
+   APP LAYOUT
+═══════════════════════════════════ */
+#app-screen{flex-direction:column}
+/* HEADER */
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--navy-dark);display:flex;align-items:center;padding:0 20px;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.header-logo{display:flex;align-items:center;gap:10px;width:var(--sidebar-w);flex-shrink:0}
+.header-logo .logo-mark{width:36px;height:36px}
+.header-logo .logo-en{font-size:1.1rem;font-weight:700;letter-spacing:.1em;color:#fff}
+.header-logo .logo-ko{font-size:.6rem;color:rgba(255,255,255,.45);letter-spacing:.06em}
+.header-center{flex:1;padding:0 24px}
+.header-title{color:rgba(255,255,255,.7);font-size:.85rem;font-weight:400}
+.header-title b{color:#fff;font-weight:600}
+.header-right{display:flex;align-items:center;gap:12px}
+.user-badge{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:30px;padding:7px 14px 7px 9px;cursor:default}
+.user-avatar{width:30px;height:30px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff}
+.user-name{color:rgba(255,255,255,.85);font-size:.82rem;font-weight:500}
+.user-role{color:rgba(255,255,255,.4);font-size:.72rem}
+.btn-logout{background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.55);font-family:inherit;font-size:.78rem;padding:7px 14px;cursor:pointer;transition:all .2s}
+.btn-logout:hover{border-color:var(--orange);color:var(--orange)}
+
+/* SIDEBAR */
+.app-sidebar{position:fixed;left:0;top:var(--header-h);bottom:0;width:var(--sidebar-w);background:var(--navy);overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+.app-sidebar::-webkit-scrollbar{width:4px}
+.app-sidebar::-webkit-scrollbar-track{background:transparent}
+.app-sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.nav-section{padding:20px 12px 8px}
+.nav-section-label{font-size:.68rem;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .18s;margin-bottom:2px;position:relative}
+.nav-item:hover{background:rgba(255,255,255,.08)}
+.nav-item.active{background:var(--orange);box-shadow:0 4px 12px rgba(232,84,32,.35)}
+.nav-item .nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.nav-item .nav-label{font-size:.85rem;font-weight:500;color:rgba(255,255,255,.8)}
+.nav-item.active .nav-label{color:#fff;font-weight:600}
+.nav-sub{padding-left:8px}
+.nav-sub .nav-item{padding:8px 12px;border-radius:8px}
+.nav-sub .nav-item .nav-label{font-size:.82rem;color:rgba(255,255,255,.6)}
+.nav-sub .nav-item.active .nav-label{color:#fff}
+.nav-sub .nav-item::before{content:'';position:absolute;left:-4px;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--orange);border-radius:2px;opacity:0}
+.nav-sub .nav-item.active::before{opacity:1}
+.admin-only-nav{display:none}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid rgba(255,255,255,.08)}
+.sidebar-footer .nav-item{background:rgba(232,84,32,.1);border:1px solid rgba(232,84,32,.2)}
+
+/* MAIN */
+.app-main{margin-left:var(--sidebar-w);margin-top:var(--header-h);flex:1;min-height:calc(100vh - var(--header-h));overflow-y:auto}
+.page{display:none;padding:28px 32px;min-height:100%;animation:fadeIn .3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── PAGE HEADER ─── */
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-head-left h1{font-size:1.35rem;font-weight:700;color:var(--navy)}
+.page-head-left p{font-size:.83rem;color:var(--muted);margin-top:3px}
+.breadcrumb{font-size:.75rem;color:var(--light);margin-bottom:6px}
+.breadcrumb b{color:var(--orange)}
+
+/* ─── CARDS ─── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.card-title{font-size:.95rem;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:16px;background:var(--orange);border-radius:2px;flex-shrink:0}
+
+/* ─── STATS ROW ─── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;display:flex;align-items:center;gap:16px;transition:box-shadow .2s}
+.stat-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.stat-icon.orange{background:rgba(232,84,32,.12);color:var(--orange)}
+.stat-icon.navy{background:rgba(30,45,78,.1);color:var(--navy)}
+.stat-icon.green{background:rgba(16,185,129,.12);color:var(--success)}
+.stat-icon.amber{background:rgba(245,158,11,.12);color:var(--warning)}
+.stat-label{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+.stat-value{font-size:1.3rem;font-weight:700;color:var(--navy)}
+
+/* ─── TABLE ─── */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{background:var(--navy);color:#fff;padding:11px 14px;font-weight:600;text-align:left;white-space:nowrap;font-size:.78rem;letter-spacing:.03em}
+thead th:first-child{border-radius:0}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#F8FAFF}
+tbody td{padding:11px 14px;color:var(--text);vertical-align:middle}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge.green{background:rgba(16,185,129,.12);color:var(--success)}
+.badge.orange{background:rgba(232,84,32,.12);color:var(--orange)}
+.badge.navy{background:rgba(30,45,78,.1);color:var(--navy)}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .18s;border:1px solid transparent;white-space:nowrap}
+.btn-primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn-primary:hover{background:var(--orange-light)}
+.btn-outline{background:#fff;color:var(--navy);border-color:var(--border)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy-mid)}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-danger{background:#FEF2F2;color:var(--danger);border-color:#FECACA}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ─── FORMS ─── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field-group{display:flex;flex-direction:column;gap:6px}
+.field-group label{font-size:.75rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.field-group input,.field-group select,.field-group textarea{background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:.87rem;padding:10px 12px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(232,84,32,.1)}
+.field-group input[readonly]{background:#F8FAFF;color:var(--muted)}
+.section-divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+.section-title{font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--orange);display:inline-block}
+
+/* ─── UPLOAD ZONE ─── */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:#FAFBFF}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--orange);background:rgba(232,84,32,.04)}
+.upload-zone .upload-icon{font-size:2.4rem;margin-bottom:10px}
+.upload-zone p{color:var(--muted);font-size:.85rem}
+.upload-zone b{color:var(--orange)}
+.upload-zone input[type=file]{display:none}
+
+/* ─── TABS ─── */
+.tab-bar{display:flex;gap:4px;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:20px;overflow-x:auto}
+.tab-btn{padding:9px 18px;border-radius:7px;border:none;background:transparent;font-family:inherit;font-size:.83rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.tab-btn.active{background:#fff;color:var(--navy);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:min(560px,100%);max-height:85vh;overflow-y:auto;animation:modalIn .3s cubic-bezier(.22,1,.36,1)}
+.modal-lg{width:min(800px,100%)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:1}
+.modal-head h3{font-size:1rem;font-weight:700;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:1.3rem;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .15s}
+.modal-close:hover{background:var(--bg);color:var(--navy)}
+.modal-body{padding:24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
+/* ─── SALARY CARD ─── */
+.salary-month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.salary-month-card{background:var(--bg);border:2px solid transparent;border-radius:10px;padding:14px;cursor:pointer;transition:all .18s;text-align:center}
+.salary-month-card:hover{border-color:var(--orange);background:#fff}
+.salary-month-card.selected{border-color:var(--orange);background:rgba(232,84,32,.05)}
+.salary-month-card .s-month{font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.salary-month-card .s-amount{font-size:1rem;font-weight:700;color:var(--navy)}
+.salary-detail{background:var(--bg);border-radius:12px;overflow:hidden}
+.salary-detail-head{background:var(--navy);color:#fff;padding:14px 20px;font-weight:600;font-size:.9rem}
+.salary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid var(--border)}
+.salary-row:last-child{border-bottom:none}
+.salary-row.total{background:rgba(232,84,32,.06);font-weight:700}
+.salary-row.total .s-val{color:var(--orange);font-size:1.05rem}
+.s-label{font-size:.83rem;color:var(--text)}
+.s-val{font-size:.87rem;font-weight:600;color:var(--navy)}
+.s-val.minus{color:var(--danger)}
+
+/* ─── DOC REQUEST ─── */
+.doc-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.doc-type-card{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:all .2s;text-align:center}
+.doc-type-card:hover{border-color:var(--orange);box-shadow:0 4px 16px rgba(232,84,32,.12)}
+.doc-type-card.selected{border-color:var(--orange);background:rgba(232,84,32,.04)}
+.doc-icon{font-size:2rem;margin-bottom:8px}
+.doc-name{font-size:.85rem;font-weight:600;color:var(--navy)}
+
+/* ─── ADMIN USER MANAGE ─── */
+.user-manage-grid{display:grid;gap:12px}
+.user-card-adm{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:16px}
+.user-card-adm .uav{width:42px;height:42px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0}
+.user-card-adm .ui{flex:1}
+.user-card-adm .un{font-size:.9rem;font-weight:600;color:var(--navy)}
+.user-card-adm .uid{font-size:.78rem;color:var(--muted);margin-top:2px}
+
+/* ─── ALERT / TOAST ─── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:13px 20px;border-radius:10px;font-size:.85rem;z-index:9999;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  :root{--sidebar-w:0px}
+  .app-sidebar{transform:translateX(-100%);transition:transform .3s}
+  .app-sidebar.open{transform:translateX(0);width:240px;box-shadow:4px 0 20px rgba(0,0,0,.3)}
+  .app-main{margin-left:0}
+  .hamburger{display:flex}
+  .page{padding:20px 16px}
+  .form-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border-radius:6px;background:rgba(255,255,255,.08);border:none;margin-right:8px}
+.hamburger span{display:block;width:20px;height:2px;background:#fff;border-radius:1px}
+.overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99}
+.overlay-bg.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+  LOGIN SCREEN
+══════════════════════════════════════ -->
+<div class="screen active" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 8C27 8 8 27 8 50C8 73 27 92 50 92C73 92 92 73 92 50C92 27 73 8 50 8Z" fill="#E85420"/>
+          <path d="M50 28C38.95 28 30 36.95 30 48C30 59.05 38.95 68 50 68C61.05 68 70 59.05 70 48C70 36.95 61.05 28 50 28Z" fill="#1E2D4E"/>
+          <path d="M50 36C43.37 36 38 41.37 38 48C38 54.63 43.37 60 50 60C56.63 60 62 54.63 62 48C62 41.37 56.63 36 50 36Z" fill="#E85420"/>
+          <path d="M58 10C62 14 78 28 84 44L92 50C92 27 73 8 50 8C52.7 8 55.38 8.68 58 10Z" fill="#1E2D4E"/>
+        </svg>
+      </div>
+      <div class="logo-text-wrap">
+        <span class="logo-en">UNISYSTEMS</span>
+        <span class="logo-ko">유니시스템즈</span>
+      </div>
+    </div>
+    <div class="login-card">
+      <h2>사내 포털 시스템</h2>
+      <div class="lf">
+        <label>아이디</label>
+        <input type="text" id="l-id" placeholder="ID를 입력하세요" autocomplete="username"/>
+      </div>
+      <div class="lf">
+        <label>비밀번호</label>
+        <input type="password" id="l-pw" placeholder="PW를 입력하세요" autocomplete="current-password"/>
+      </div>
+      <p class="login-err" id="l-err"></p>
+      <button class="btn-login" id="l-btn">로그인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  APP SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="app-screen">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <button class="hamburger" id="hamburger-btn">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="header-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 100 100" fill="none">
+          <path d="M50 8C27 8 8 27 8 50C8 73 27 92 50 92C73 92 92 73 92 50C92 27 73 8 50 8Z" fill="#E85420"/>
+          <path d="M50 28C38.95 28 30 36.95 30 48C30 59.05 38.95 68 50 68C61.05 68 70 59.05 70 48C70 36.95 61.05 28 50 28Z" fill="#1E2D4E"/>
+          <path d="M50 36C43.37 36 38 41.37 38 48C38 54.63 43.37 60 50 60C56.63 60 62 54.63 62 48C62 41.37 56.63 36 50 36Z" fill="#E85420"/>
+          <path d="M58 10C62 14 78 28 84 44L92 50C92 27 73 8 50 8C52.7 8 55.38 8.68 58 10Z" fill="#1E2D4E"/>
+        </svg>
+      </div>
+      <div class="logo-text-wrap">
+        <span class="logo-en" style="font-size:.95rem">UNISYSTEMS</span>
+        <span class="logo-ko">유니시스템즈</span>
+      </div>
+    </div>
+    <div class="header-center">
+      <span class="header-title" id="header-page-title"><b>대시보드</b></span>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="h-avatar">?</div>
+        <div>
+          <div class="user-name" id="h-name">-</div>
+          <div class="user-role" id="h-role">-</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="app-sidebar" id="sidebar">
+    <nav>
+      <div class="nav-section">
+        <div class="nav-section-label">메인</div>
+        <div class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">대시보드</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">인사관리</div>
+        <div class="nav-item" data-page="hr-info">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">인적사항</span>
+        </div>
+        <div class="nav-item" data-page="hr-salary">
+          <span class="nav-icon">💰</span>
+          <span class="nav-label">급여정보</span>
+        </div>
+        <div class="nav-item" data-page="hr-docs">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">인사서류 요청</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">재무관리</div>
+        <div class="nav-item" data-page="fin-general">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">일반관리비 현황</span>
+        </div>
+        <div class="nav-item" data-page="fin-cost">
+          <span class="nav-icon">🧾</span>
+          <span class="nav-label">원가현황</span>
+        </div>
+        <div class="nav-item" data-page="fin-pl">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">손익현황</span>
+        </div>
+      </div>
+      <!-- 관리자 전용 -->
+      <div class="nav-section admin-only-nav" id="admin-nav">
+        <div class="nav-section-label">관리자</div>
+        <div class="nav-item" data-page="admin-users">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">환경설정 / 직원관리</span>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- OVERLAY (mobile) -->
+  <div class="overlay-bg" id="overlay-bg"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-main">
+
+    <!-- ── 대시보드 ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">UNISYSTEMS > <b>대시보드</b></div>
+          <h1>대시보드</h1>
+          <p id="dash-welcome">안녕하세요!</p>
+        </div>
+      </div>
+      <div class="stats-row" id="dash-stats">
+        <div class="stat-card">
+          <div class="stat-icon orange">👥</div>
+          <div><div class="stat-label">전체 직원</div><div class="stat-value" id="stat-emp">-</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon navy">📄</div>
+          <div><div class="stat-label">서류 요청</div><div class="stat-value" id="stat-doc">-</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">💰</div>
+          <div><div class="stat-label">이번달 급여</div><div class="stat-value" id="stat-sal">-</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">📅</div>
+          <div><div class="stat-label">오늘</div><div class="stat-value" id="stat-date" style="font-size:.9rem">-</div></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px" id="dash-grid">
+        <div class="card">
+          <div class="card-head"><span class="card-title">최근 공지</span></div>
+          <div style="color:var(--muted);font-size:.85rem;line-height:1.8">
+            <div style="padding:8px 0;border-bottom:1px solid var(--border)">📌 2025년 연말정산 안내 (2025.12.01)</div>
+            <div style="padding:8px 0;border-bottom:1px solid var(--border)">📌 사내 포털 시스템 오픈 안내</div>
+            <div style="padding:8px 0">📌 복리후생 제도 업데이트 안내</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">빠른 메뉴</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button class="btn btn-outline" style="justify-content:center" onclick="goPage('hr-info')">👤 인적사항</button>
+            <button class="btn btn-outline" style="justify-content:center" onclick="goPage('hr-salary')">💰 급여정보</button>
+            <button class="btn btn-outline" style="justify-content:center" onclick="goPage('hr-docs')">📄 서류요청</button>
+            <button class="btn btn-outline" style="justify-content:center" onclick="goPage('fin-pl')">📈 손익현황</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 인적사항 ── -->
+    <div class="page" id="page-hr-info">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">인사관리 > <b>인적사항</b></div>
+          <h1>인적사항</h1>
+          <p>직원 기본 정보 관리</p>
+        </div>
+        <div class="btn-group" id="hr-info-actions">
+          <label class="btn btn-outline" for="upload-hr-info">⬆ 엑셀 업로드</label>
+          <input type="file" id="upload-hr-info" accept=".xlsx,.xls,.csv" style="display:none"/>
+          <button class="btn btn-primary" id="btn-dl-hr-info">⬇ 양식 다운로드</button>
+        </div>
+      </div>
+
+      <!-- 관리자: 직원 목록 탭 -->
+      <div id="hr-info-admin-view" style="display:none">
+        <div class="tab-bar" id="hr-info-tabs"></div>
+      </div>
+
+      <!-- 공통: 인적사항 폼 -->
+      <div class="card" id="hr-info-form-card">
+        <div class="card-head">
+          <span class="card-title" id="hr-info-form-title">기본 정보</span>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline" id="btn-hr-edit">✏️ 수정</button>
+            <button class="btn btn-sm btn-primary" id="btn-hr-save" style="display:none">💾 저장</button>
+          </div>
+        </div>
+        <div>
+          <p class="section-title">기본 인적사항</p>
+          <div class="form-grid" id="hr-info-basic"></div>
+          <hr class="section-divider"/>
+          <p class="section-title">급여 / 법인카드 정보</p>
+          <div class="form-grid" id="hr-info-financial"></div>
+          <hr class="section-divider"/>
+          <p class="section-title">연락처 / 주소</p>
+          <div class="form-grid" id="hr-info-contact"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 급여정보 ── -->
+    <div class="page" id="page-hr-salary">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">인사관리 > <b>급여정보</b></div>
+          <h1>급여정보</h1>
+          <p>월별 급여 내역 조회</p>
+        </div>
+        <div class="btn-group">
+          <label class="btn btn-outline" for="upload-salary">⬆ 엑셀 업로드</label>
+          <input type="file" id="upload-salary" accept=".xlsx,.xls,.csv" style="display:none"/>
+          <button class="btn btn-primary" id="btn-dl-salary">⬇ 양식 다운로드</button>
+        </div>
+      </div>
+      <!-- 관리자 직원 선택 -->
+      <div id="salary-admin-select" style="display:none;margin-bottom:16px">
+        <label style="font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:6px;display:block">직원 선택</label>
+        <select id="salary-emp-select" class="field-group" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.87rem;outline:none;max-width:280px"></select>
+      </div>
+
+      <div class="stats-row" id="salary-stats">
+        <div class="stat-card"><div class="stat-icon orange">💵</div><div><div class="stat-label">이번달 실지급액</div><div class="stat-value" id="s-this">-</div></div></div>
+        <div class="stat-card"><div class="stat-icon navy">📊</div><div><div class="stat-label">월 평균 급여</div><div class="stat-value" id="s-avg">-</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">📈</div><div><div class="stat-label">전월 대비</div><div class="stat-value" id="s-diff">-</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">월별 급여 내역</span></div>
+        <div style="margin-bottom:16px">
+          <div class="salary-month-grid" id="salary-month-grid"></div>
+        </div>
+        <div id="salary-detail-wrap" style="display:none">
+          <div class="salary-detail">
+            <div class="salary-detail-head" id="sal-detail-title">2024년 12월 급여 명세</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+              <div>
+                <div class="salary-row"><span class="s-label">기본급</span><span class="s-val" id="sd-base">-</span></div>
+                <div class="salary-row"><span class="s-label">연장수당</span><span class="s-val" id="sd-overtime">-</span></div>
+                <div class="salary-row"><span class="s-label">휴일근로수당</span><span class="s-val" id="sd-holiday">-</span></div>
+                <div class="salary-row"><span class="s-label">기타수당</span><span class="s-val" id="sd-other">-</span></div>
+                <div class="salary-row total"><span class="s-label" style="font-weight:700">지급합계</span><span class="s-val" id="sd-total">-</span></div>
+              </div>
+              <div>
+                <div class="salary-row"><span class="s-label">국민연금</span><span class="s-val minus" id="sd-nps">-</span></div>
+                <div class="salary-row"><span class="s-label">건강보험</span><span class="s-val minus" id="sd-health">-</span></div>
+                <div class="salary-row"><span class="s-label">장기요양보험</span><span class="s-val minus" id="sd-ltc">-</span></div>
+                <div class="salary-row"><span class="s-label">고용보험</span><span class="s-val minus" id="sd-emp-ins">-</span></div>
+                <div class="salary-row"><span class="s-label">소득세</span><span class="s-val minus" id="sd-tax">-</span></div>
+                <div class="salary-row"><span class="s-label">지방소득세</span><span class="s-val minus" id="sd-local-tax">-</span></div>
+                <div class="salary-row"><span class="s-label">기타공제</span><span class="s-val minus" id="sd-etc-ded">-</span></div>
+                <div class="salary-row total"><span class="s-label" style="font-weight:700;color:var(--danger)">공제합계</span><span class="s-val minus" id="sd-ded-total">-</span></div>
+              </div>
+            </div>
+            <div class="salary-row total" style="background:rgba(30,45,78,.06);border-top:2px solid var(--orange)">
+              <span class="s-label" style="font-size:1rem;font-weight:700;color:var(--navy)">🏦 실 지급액</span>
+              <span class="s-val" style="font-size:1.2rem;color:var(--orange)" id="sd-net">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 인사서류 요청 ── -->
+    <div class="page" id="page-hr-docs">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">인사관리 > <b>인사서류 요청</b></div>
+          <h1>인사서류 요청</h1>
+          <p>증명서 발급 신청</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-head"><span class="card-title">서류 선택</span></div>
+          <div class="doc-type-grid">
+            <div class="doc-type-card" data-doc="경력증명서" onclick="selectDoc(this)">
+              <div class="doc-icon">📋</div>
+              <div class="doc-name">경력증명서</div>
+            </div>
+            <div class="doc-type-card" data-doc="재직증명서" onclick="selectDoc(this)">
+              <div class="doc-icon">🏢</div>
+              <div class="doc-name">재직증명서</div>
+            </div>
+            <div class="doc-type-card" data-doc="원천징수영수증" onclick="selectDoc(this)">
+              <div class="doc-icon">🧾</div>
+              <div class="doc-name">원천징수영수증</div>
+            </div>
+            <div class="doc-type-card" data-doc="갑근세영수증" onclick="selectDoc(this)">
+              <div class="doc-icon">📑</div>
+              <div class="doc-name">갑근세영수증</div>
+            </div>
+          </div>
+          <div style="margin-top:20px" id="doc-form-wrap" style="display:none">
+            <div class="field-group" style="margin-bottom:12px">
+              <label>제출처</label>
+              <input type="text" id="doc-target" placeholder="예: 은행, 관공서 등"/>
+            </div>
+            <div class="field-group" style="margin-bottom:12px">
+              <label>부수</label>
+              <input type="number" id="doc-count" value="1" min="1" max="10"/>
+            </div>
+            <div class="field-group">
+              <label>요청 사유</label>
+              <textarea id="doc-reason" rows="3" placeholder="요청 사유를 입력하세요" style="resize:vertical"></textarea>
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:16px;justify-content:center" onclick="submitDocRequest()">📨 신청하기</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">신청 내역</span></div>
+          <div id="doc-history-list">
+            <div style="text-align:center;padding:32px;color:var(--light);font-size:.85rem">신청 내역이 없습니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 일반관리비 현황 ── -->
+    <div class="page" id="page-fin-general">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">재무관리 > <b>일반관리비 현황</b></div>
+          <h1>일반관리비 현황</h1>
+        </div>
+        <div class="btn-group">
+          <label class="btn btn-outline" for="upload-fin-general">⬆ 엑셀 업로드</label>
+          <input type="file" id="upload-fin-general" accept=".xlsx,.xls,.csv" style="display:none"/>
+          <button class="btn btn-primary" id="btn-dl-fin-general">⬇ 양식 다운로드</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">일반관리비 내역</span></div>
+        <div class="tbl-wrap" id="tbl-fin-general">
+          <div style="padding:40px;text-align:center;color:var(--light);font-size:.85rem">엑셀 파일을 업로드하면 데이터가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 원가현황 ── -->
+    <div class="page" id="page-fin-cost">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">재무관리 > <b>원가현황</b></div>
+          <h1>원가현황</h1>
+        </div>
+        <div class="btn-group">
+          <label class="btn btn-outline" for="upload-fin-cost">⬆ 엑셀 업로드</label>
+          <input type="file" id="upload-fin-cost" accept=".xlsx,.xls,.csv" style="display:none"/>
+          <button class="btn btn-primary" id="btn-dl-fin-cost">⬇ 양식 다운로드</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">원가 내역</span></div>
+        <div class="tbl-wrap" id="tbl-fin-cost">
+          <div style="padding:40px;text-align:center;color:var(--light);font-size:.85rem">엑셀 파일을 업로드하면 데이터가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 손익현황 ── -->
+    <div class="page" id="page-fin-pl">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">재무관리 > <b>손익현황</b></div>
+          <h1>손익현황</h1>
+        </div>
+        <div class="btn-group">
+          <label class="btn btn-outline" for="upload-fin-pl">⬆ 엑셀 업로드</label>
+          <input type="file" id="upload-fin-pl" accept=".xlsx,.xls,.csv" style="display:none"/>
+          <button class="btn btn-primary" id="btn-dl-fin-pl">⬇ 양식 다운로드</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">손익 현황</span></div>
+        <div class="tbl-wrap" id="tbl-fin-pl">
+          <div style="padding:40px;text-align:center;color:var(--light);font-size:.85rem">엑셀 파일을 업로드하면 데이터가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 관리자: 환경설정 ── -->
+    <div class="page" id="page-admin-users">
+      <div class="page-head">
+        <div class="page-head-left">
+          <div class="breadcrumb">관리자 > <b>환경설정 / 직원관리</b></div>
+          <h1>직원 계정 관리</h1>
+          <p>직원 계정 생성 및 권한 관리 (관리자 전용)</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddUserModal()">+ 직원 추가</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">직원 목록</span><span id="emp-count-badge" class="badge navy">0명</span></div>
+        <div class="user-manage-grid" id="user-manage-list"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- 직원 추가/수정 모달 -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-user-title">직원 계정 추가</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-user')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field-group"><label>이름</label><input type="text" id="mu-name" placeholder="홍길동"/></div>
+        <div class="field-group"><label>직책</label><input type="text" id="mu-position" placeholder="팀장"/></div>
+        <div class="field-group"><label>직급</label><input type="text" id="mu-rank" placeholder="과장"/></div>
+        <div class="field-group"><label>아이디</label><input type="text" id="mu-id" placeholder="employee01"/></div>
+        <div class="field-group"><label>비밀번호</label><input type="password" id="mu-pw" placeholder="초기 비밀번호"/></div>
+        <div class="field-group"><label>이메일</label><input type="email" id="mu-email" placeholder="user@unisystems.co.kr"/></div>
+        <div class="field-group"><label>연락처</label><input type="text" id="mu-phone" placeholder="010-0000-0000"/></div>
+        <div class="field-group"><label>성별</label>
+          <select id="mu-gender"><option value="남">남</option><option value="여">여</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-user')">취소</button>
+      <button class="btn btn-primary" onclick="saveUser()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════
+  JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════
+//  DATA STORE (localStorage)
+// ═══════════════════════════════════
+const STORE_KEY = 'unis_portal_v1';
+
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || initStore(); }
+  catch { return initStore(); }
+}
+
+function initStore() {
+  const s = {
+    users: [
+      {
+        id: 'dhkwon', pw: 'dhkwon', name: '권도혁', role: 'admin',
+        position: '대표이사', rank: '임원', gender: '남',
+        email: 'dhkwon@unisystems.co.kr', phone: '010-0000-0001',
+        resno: '', salary_account: '', corp_account: '', corp_card: '', address: '',
+        salaries: {}
+      }
+    ],
+    docRequests: [],
+    finData: { general: null, cost: null, pl: null },
+    hrInfoData: {}
+  };
+  saveStore(s);
+  return s;
+}
+
+function saveStore(s) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(s));
+}
+
+let store = loadStore();
+let currentUser = null;
+let editingUserId = null;
+let selectedDocType = null;
+let selectedSalaryMonth = null;
+let salaryViewUserId = null;
+
+// ═══════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════
+document.getElementById('l-btn').addEventListener('click', doLogin);
+document.getElementById('l-id').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+document.getElementById('l-pw').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+['l-id','l-pw'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+  document.getElementById('l-err').textContent = '';
+  document.getElementById(id).classList.remove('err');
+}));
+
+function doLogin() {
+  const id = document.getElementById('l-id').value.trim();
+  const pw = document.getElementById('l-pw').value;
+  const u = store.users.find(u => u.id === id && u.pw === pw);
+  if (!u) {
+    document.getElementById('l-err').textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    document.getElementById('l-id').classList.add('err');
+    document.getElementById('l-pw').classList.add('err');
+    document.getElementById('l-pw').value = '';
+    return;
+  }
+  currentUser = u;
+  initApp();
+  document.getElementById('login-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  currentUser = null;
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('l-id').value = '';
+  document.getElementById('l-pw').value = '';
+  goPage('dashboard');
+});
+
+// ═══════════════════════════════════
+//  APP INIT
+// ═══════════════════════════════════
+function initApp() {
+  const isAdmin = currentUser.role === 'admin';
+  document.getElementById('h-name').textContent = currentUser.name;
+  document.getElementById('h-role').textContent = isAdmin ? '관리자' : currentUser.position || '직원';
+  document.getElementById('h-avatar').textContent = currentUser.name[0];
+  document.getElementById('dash-welcome').textContent = `안녕하세요, ${currentUser.name}님! 오늘도 좋은 하루 되세요.`;
+  document.getElementById('stat-date').textContent = new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+
+  // admin nav
+  document.getElementById('admin-nav').style.display = isAdmin ? 'block' : 'none';
+
+  // stats
+  document.getElementById('stat-emp').textContent = isAdmin ? store.users.filter(u=>u.role!=='admin').length + '명' : '-';
+  document.getElementById('stat-doc').textContent = store.docRequests.filter(d => isAdmin || d.userId === currentUser.id).length + '건';
+
+  // salary
+  const userSalaries = (currentUser.salaries && Object.values(currentUser.salaries)) || [];
+  if (userSalaries.length) {
+    const latest = userSalaries[userSalaries.length - 1];
+    document.getElementById('stat-sal').textContent = fmtMoney(latest.net) + '원';
+  } else {
+    document.getElementById('stat-sal').textContent = '미등록';
+  }
+
+  // dashboard grid visibility
+  if (!isAdmin) {
+    document.getElementById('stat-emp').closest('.stat-card').style.display = 'none';
+  } else {
+    document.getElementById('stat-emp').closest('.stat-card').style.display = 'flex';
+  }
+
+  renderAdminUserList();
+  renderHrInfo(currentUser.id);
+  renderSalaryPage(currentUser.id);
+  renderDocHistory();
+}
+
+// ═══════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════
+document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+  el.addEventListener('click', () => {
+    goPage(el.dataset.page);
+    // mobile close
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay-bg').classList.remove('show');
+  });
+});
+
+const pageTitles = {
+  'dashboard':'대시보드','hr-info':'인적사항','hr-salary':'급여정보','hr-docs':'인사서류 요청',
+  'fin-general':'일반관리비 현황','fin-cost':'원가현황','fin-pl':'손익현황','admin-users':'환경설정'
+};
+
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id)?.classList.add('active');
+  document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active');
+  document.getElementById('header-page-title').innerHTML = `<b>${pageTitles[id] || id}</b>`;
+}
+
+// hamburger
+document.getElementById('hamburger-btn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay-bg').classList.toggle('show');
+});
+document.getElementById('overlay-bg').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay-bg').classList.remove('show');
+});
+
+// ═══════════════════════════════════
+//  ADMIN: USER MANAGEMENT
+// ═══════════════════════════════════
+function renderAdminUserList() {
+  const list = document.getElementById('user-manage-list');
+  const employees = store.users.filter(u => u.role !== 'admin');
+  document.getElementById('emp-count-badge').textContent = employees.length + '명';
+  list.innerHTML = employees.length === 0
+    ? '<div style="padding:32px;text-align:center;color:var(--light);font-size:.85rem">등록된 직원이 없습니다.</div>'
+    : employees.map(u => `
+      <div class="user-card-adm">
+        <div class="uav">${u.name[0]}</div>
+        <div class="ui">
+          <div class="un">${u.name} <span class="badge navy" style="margin-left:6px">${u.position||''} ${u.rank||''}</span></div>
+          <div class="uid">ID: ${u.id} · ${u.email||'이메일 미등록'}</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-outline" onclick="editUser('${u.id}')">수정</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">삭제</button>
+        </div>
+      </div>`).join('');
+}
+
+function openAddUserModal() {
+  editingUserId = null;
+  document.getElementById('modal-user-title').textContent = '직원 계정 추가';
+  ['mu-name','mu-position','mu-rank','mu-id','mu-pw','mu-email','mu-phone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-add-user').classList.add('open');
+}
+
+function editUser(uid) {
+  const u = store.users.find(x => x.id === uid);
+  if (!u) return;
+  editingUserId = uid;
+  document.getElementById('modal-user-title').textContent = '직원 정보 수정';
+  document.getElementById('mu-name').value = u.name || '';
+  document.getElementById('mu-position').value = u.position || '';
+  document.getElementById('mu-rank').value = u.rank || '';
+  document.getElementById('mu-id').value = u.id;
+  document.getElementById('mu-id').readOnly = true;
+  document.getElementById('mu-pw').value = u.pw || '';
+  document.getElementById('mu-email').value = u.email || '';
+  document.getElementById('mu-phone').value = u.phone || '';
+  document.getElementById('mu-gender').value = u.gender || '남';
+  document.getElementById('modal-add-user').classList.add('open');
+}
+
+function saveUser() {
+  const name = document.getElementById('mu-name').value.trim();
+  const id   = document.getElementById('mu-id').value.trim();
+  const pw   = document.getElementById('mu-pw').value.trim();
+  if (!name || !id || !pw) { showToast('이름, 아이디, 비밀번호는 필수입니다.', 'error'); return; }
+  if (!editingUserId && store.users.find(u => u.id === id)) { showToast('이미 존재하는 아이디입니다.', 'error'); return; }
+
+  if (editingUserId) {
+    const u = store.users.find(x => x.id === editingUserId);
+    Object.assign(u, { name, pw, position: document.getElementById('mu-position').value, rank: document.getElementById('mu-rank').value, email: document.getElementById('mu-email').value, phone: document.getElementById('mu-phone').value, gender: document.getElementById('mu-gender').value });
+  } else {
+    store.users.push({ id, pw, name, role: 'employee', position: document.getElementById('mu-position').value, rank: document.getElementById('mu-rank').value, email: document.getElementById('mu-email').value, phone: document.getElementById('mu-phone').value, gender: document.getElementById('mu-gender').value, salaries: {} });
+  }
+  saveStore(store);
+  renderAdminUserList();
+  closeModal('modal-add-user');
+  document.getElementById('mu-id').readOnly = false;
+  showToast('저장되었습니다.', 'success');
+  // update stats
+  document.getElementById('stat-emp').textContent = store.users.filter(u=>u.role!=='admin').length + '명';
+}
+
+function deleteUser(uid) {
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+  store.users = store.users.filter(u => u.id !== uid);
+  saveStore(store);
+  renderAdminUserList();
+  showToast('삭제되었습니다.');
+}
+
+// ═══════════════════════════════════
+//  HR INFO PAGE
+// ═══════════════════════════════════
+const HR_BASIC_FIELDS = [
+  { key:'name', label:'이름' }, { key:'position', label:'직책' },
+  { key:'rank', label:'직급' }, { key:'gender', label:'성별' },
+  { key:'resno', label:'주민등록번호', sensitive:true },
+  { key:'email', label:'이메일' },
+];
+const HR_FIN_FIELDS = [
+  { key:'salary_account', label:'급여계좌' },
+  { key:'corp_account', label:'법인카드 계좌' },
+  { key:'corp_card', label:'법인카드 번호', sensitive:true },
+];
+const HR_CONTACT_FIELDS = [
+  { key:'phone', label:'연락처' },
+  { key:'address', label:'주소' },
+];
+
+let hrEditMode = false;
+
+function renderHrInfo(userId) {
+  const u = store.users.find(x => x.id === userId);
+  if (!u) return;
+  const isAdmin = currentUser.role === 'admin';
+
+  // Admin: show employee tabs
+  if (isAdmin) {
+    const employees = store.users.filter(x => x.role !== 'admin');
+    const tabBar = document.getElementById('hr-info-tabs');
+    document.getElementById('hr-info-admin-view').style.display = 'block';
+    tabBar.innerHTML = [{ id: currentUser.id, name: '내 정보 (관리자)' }, ...employees].map(e =>
+      `<button class="tab-btn${e.id === userId ? ' active' : ''}" onclick="renderHrInfo('${e.id}')">${e.name}</button>`
+    ).join('');
+    document.getElementById('hr-info-form-title').textContent = u.name + '님의 인적사항';
+  }
+
+  const renderFields = (containerId, fields) => {
+    document.getElementById(containerId).innerHTML = fields.map(f => `
+      <div class="field-group">
+        <label>${f.label}</label>
+        <input type="${f.sensitive ? 'password' : 'text'}" 
+          id="hrf-${f.key}" value="${u[f.key]||''}" 
+          ${hrEditMode ? '' : 'readonly'} 
+          placeholder="${f.label} 입력"/>
+      </div>`).join('');
+  };
+  renderFields('hr-info-basic', HR_BASIC_FIELDS);
+  renderFields('hr-info-financial', HR_FIN_FIELDS);
+  renderFields('hr-info-contact', HR_CONTACT_FIELDS);
+  hrEditMode = false;
+  document.getElementById('btn-hr-edit').style.display = 'inline-flex';
+  document.getElementById('btn-hr-save').style.display = 'none';
+
+  // Non-admin employees only see their own
+  if (!isAdmin) {
+    document.getElementById('hr-info-admin-view').style.display = 'none';
+  }
+}
+
+document.getElementById('btn-hr-edit').addEventListener('click', () => {
+  hrEditMode = true;
+  [...document.querySelectorAll('[id^="hrf-"]')].forEach(el => el.removeAttribute('readonly'));
+  document.getElementById('btn-hr-edit').style.display = 'none';
+  document.getElementById('btn-hr-save').style.display = 'inline-flex';
+});
+
+document.getElementById('btn-hr-save').addEventListener('click', () => {
+  const activeUserId = document.querySelector('#hr-info-tabs .tab-btn.active')?.onclick?.toString().match(/'([^']+)'/)?.[1] || currentUser.id;
+  const u = store.users.find(x => x.id === activeUserId) || currentUser;
+  [...HR_BASIC_FIELDS,...HR_FIN_FIELDS,...HR_CONTACT_FIELDS].forEach(f => {
+    const el = document.getElementById('hrf-' + f.key);
+    if (el) u[f.key] = el.value;
+  });
+  saveStore(store);
+  hrEditMode = false;
+  [...document.querySelectorAll('[id^="hrf-"]')].forEach(el => el.setAttribute('readonly',''));
+  document.getElementById('btn-hr-edit').style.display = 'inline-flex';
+  document.getElementById('btn-hr-save').style.display = 'none';
+  showToast('인적사항이 저장되었습니다.', 'success');
+});
+
+// HR info excel upload
+document.getElementById('upload-hr-info').addEventListener('change', function(e) {
+  const f = e.target.files[0]; if (!f) return;
+  readExcel(f, (data) => {
+    if (!data.length) { showToast('데이터가 없습니다.', 'error'); return; }
+    // map rows to employees
+    data.forEach(row => {
+      const uid = row['아이디'] || row['ID'] || row['id'];
+      if (!uid) return;
+      const u = store.users.find(x => x.id === uid);
+      if (!u) return;
+      if (row['이름']) u.name = row['이름'];
+      if (row['직책']) u.position = row['직책'];
+      if (row['직급']) u.rank = row['직급'];
+      if (row['성별']) u.gender = row['성별'];
+      if (row['주민등록번호']) u.resno = row['주민등록번호'];
+      if (row['이메일']) u.email = row['이메일'];
+      if (row['연락처']) u.phone = row['연락처'];
+      if (row['주소']) u.address = row['주소'];
+      if (row['급여계좌']) u.salary_account = row['급여계좌'];
+      if (row['법인카드계좌']) u.corp_account = row['법인카드계좌'];
+      if (row['법인카드번호']) u.corp_card = row['법인카드번호'];
+    });
+    saveStore(store);
+    renderHrInfo(currentUser.id);
+    showToast(`${data.length}건 인적사항이 업로드되었습니다.`, 'success');
+  });
+  this.value = '';
+});
+
+document.getElementById('btn-dl-hr-info').addEventListener('click', () => {
+  const headers = ['아이디','이름','직책','직급','성별','주민등록번호','이메일','연락처','주소','급여계좌','법인카드계좌','법인카드번호'];
+  downloadExcel([headers, ['dhkwon','홍길동','팀장','과장','남','000000-0000000','hong@unisystems.co.kr','010-0000-0000','서울시 강남구','은행명 계좌번호','은행명 계좌번호','0000-0000-0000-0000']], '인적사항_양식');
+});
+
+// ═══════════════════════════════════
+//  SALARY PAGE
+// ═══════════════════════════════════
+function renderSalaryPage(userId) {
+  salaryViewUserId = userId;
+  const u = store.users.find(x => x.id === userId);
+  if (!u) return;
+  const salaries = u.salaries || {};
+  const months = Object.keys(salaries).sort();
+
+  // Admin: show employee select
+  const isAdmin = currentUser.role === 'admin';
+  const adminSel = document.getElementById('salary-admin-select');
+  if (isAdmin) {
+    adminSel.style.display = 'block';
+    const sel = document.getElementById('salary-emp-select');
+    const emps = store.users;
+    sel.innerHTML = emps.map(e => `<option value="${e.id}" ${e.id===userId?'selected':''}>${e.name} (${e.id})</option>`).join('');
+    sel.onchange = () => renderSalaryPage(sel.value);
+  } else {
+    adminSel.style.display = 'none';
+  }
+
+  // Stats
+  if (months.length) {
+    const vals = months.map(m => salaries[m].net || 0);
+    const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const latest = vals[vals.length-1];
+    const prev = vals.length > 1 ? vals[vals.length-2] : latest;
+    document.getElementById('s-this').textContent = fmtMoney(latest) + '원';
+    document.getElementById('s-avg').textContent = fmtMoney(Math.round(avg)) + '원';
+    const diff = latest - prev;
+    document.getElementById('s-diff').textContent = (diff >= 0 ? '▲ +' : '▼ ') + fmtMoney(Math.abs(diff)) + '원';
+    document.getElementById('s-diff').style.color = diff >= 0 ? 'var(--success)' : 'var(--danger)';
+  } else {
+    ['s-this','s-avg','s-diff'].forEach(id => document.getElementById(id).textContent = '미등록');
+  }
+
+  // Month grid
+  const grid = document.getElementById('salary-month-grid');
+  grid.innerHTML = months.length
+    ? months.reverse().map(m => `
+      <div class="salary-month-card${m===selectedSalaryMonth?' selected':''}" onclick="showSalaryDetail('${userId}','${m}')">
+        <div class="s-month">${m}</div>
+        <div class="s-amount">${fmtMoney(salaries[m].net||0)}원</div>
+      </div>`).join('')
+    : '<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--light);font-size:.85rem">급여 데이터가 없습니다.</div>';
+
+  document.getElementById('salary-detail-wrap').style.display = 'none';
+}
+
+function showSalaryDetail(userId, month) {
+  selectedSalaryMonth = month;
+  const u = store.users.find(x => x.id === userId);
+  if (!u) return;
+  const s = (u.salaries || {})[month];
+  if (!s) return;
+  document.getElementById('sal-detail-title').textContent = `${month} 급여 명세서 - ${u.name}`;
+  const f = (v) => fmtMoney(v||0) + '원';
+  document.getElementById('sd-base').textContent = f(s.base);
+  document.getElementById('sd-overtime').textContent = f(s.overtime);
+  document.getElementById('sd-holiday').textContent = f(s.holiday);
+  document.getElementById('sd-other').textContent = f(s.other_pay);
+  const totalPay = (s.base||0)+(s.overtime||0)+(s.holiday||0)+(s.other_pay||0);
+  document.getElementById('sd-total').textContent = f(totalPay);
+  document.getElementById('sd-nps').textContent = '- '+f(s.nps);
+  document.getElementById('sd-health').textContent = '- '+f(s.health);
+  document.getElementById('sd-ltc').textContent = '- '+f(s.ltc);
+  document.getElementById('sd-emp-ins').textContent = '- '+f(s.emp_ins);
+  document.getElementById('sd-tax').textContent = '- '+f(s.income_tax);
+  document.getElementById('sd-local-tax').textContent = '- '+f(s.local_tax);
+  document.getElementById('sd-etc-ded').textContent = '- '+f(s.other_ded);
+  const totalDed = (s.nps||0)+(s.health||0)+(s.ltc||0)+(s.emp_ins||0)+(s.income_tax||0)+(s.local_tax||0)+(s.other_ded||0);
+  document.getElementById('sd-ded-total').textContent = '- '+f(totalDed);
+  document.getElementById('sd-net').textContent = f(s.net);
+  document.getElementById('salary-detail-wrap').style.display = 'block';
+  // highlight selected card
+  document.querySelectorAll('.salary-month-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+}
+
+// Salary excel upload
+document.getElementById('upload-salary').addEventListener('change', function(e) {
+  const f = e.target.files[0]; if (!f) return;
+  readExcel(f, (data) => {
+    if (!data.length) { showToast('데이터가 없습니다.', 'error'); return; }
+    let count = 0;
+    data.forEach(row => {
+      const uid = row['아이디'] || row['ID'];
+      const month = row['년월'] || row['월'];
+      if (!uid || !month) return;
+      const u = store.users.find(x => x.id === uid);
+      if (!u) return;
+      if (!u.salaries) u.salaries = {};
+      u.salaries[String(month)] = {
+        base: num(row['기본급']), overtime: num(row['연장수당']), holiday: num(row['휴일근로수당']),
+        other_pay: num(row['기타수당']), nps: num(row['국민연금']), health: num(row['건강보험']),
+        ltc: num(row['장기요양보험']), emp_ins: num(row['고용보험']), income_tax: num(row['소득세']),
+        local_tax: num(row['지방소득세']), other_ded: num(row['기타공제']), net: num(row['실지급액'])
+      };
+      count++;
+    });
+    saveStore(store);
+    renderSalaryPage(salaryViewUserId || currentUser.id);
+    showToast(`${count}건 급여 데이터가 업로드되었습니다.`, 'success');
+  });
+  this.value = '';
+});
+
+document.getElementById('btn-dl-salary').addEventListener('click', () => {
+  const headers = ['아이디','년월','기본급','연장수당','휴일근로수당','기타수당','국민연금','건강보험','장기요양보험','고용보험','소득세','지방소득세','기타공제','실지급액'];
+  downloadExcel([headers, ['dhkwon','2024-12',3000000,200000,100000,50000,135000,106350,13780,25650,98000,9800,0,2961420]], '급여정보_양식');
+});
+
+// ═══════════════════════════════════
+//  DOC REQUESTS
+// ═══════════════════════════════════
+function selectDoc(el) {
+  document.querySelectorAll('.doc-type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDocType = el.dataset.doc;
+  document.getElementById('doc-form-wrap').style.display = 'block';
+}
+
+function submitDocRequest() {
+  if (!selectedDocType) { showToast('서류 종류를 선택해주세요.', 'error'); return; }
+  const req = {
+    id: Date.now(), userId: currentUser.id, userName: currentUser.name,
+    docType: selectedDocType,
+    target: document.getElementById('doc-target').value || '-',
+    count: document.getElementById('doc-count').value || 1,
+    reason: document.getElementById('doc-reason').value || '-',
+    status: '접수',
+    date: new Date().toLocaleDateString('ko-KR')
+  };
+  store.docRequests.push(req);
+  saveStore(store);
+  renderDocHistory();
+  document.querySelectorAll('.doc-type-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('doc-form-wrap').style.display = 'none';
+  document.getElementById('doc-target').value = '';
+  document.getElementById('doc-reason').value = '';
+  document.getElementById('doc-count').value = 1;
+  selectedDocType = null;
+  showToast('서류가 신청되었습니다.', 'success');
+  document.getElementById('stat-doc').textContent = store.docRequests.filter(d => currentUser.role === 'admin' || d.userId === currentUser.id).length + '건';
+}
+
+function renderDocHistory() {
+  const isAdmin = currentUser.role === 'admin';
+  const reqs = store.docRequests.filter(d => isAdmin || d.userId === currentUser.id).reverse();
+  const el = document.getElementById('doc-history-list');
+  if (!reqs.length) { el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--light);font-size:.85rem">신청 내역이 없습니다.</div>'; return; }
+  el.innerHTML = reqs.map(r => `
+    <div style="padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:.87rem;font-weight:600;color:var(--navy)">${r.docType} ${isAdmin ? `<span style="color:var(--muted);font-weight:400">(${r.userName})</span>` : ''}</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:2px">${r.date} · 제출처: ${r.target} · ${r.count}부</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge green">${r.status}</span>
+        ${isAdmin ? `<button class="btn btn-sm btn-outline" onclick="updateDocStatus(${r.id})">처리</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function updateDocStatus(id) {
+  const statuses = ['접수','처리중','완료'];
+  const r = store.docRequests.find(x => x.id === id);
+  if (!r) return;
+  const cur = statuses.indexOf(r.status);
+  r.status = statuses[(cur + 1) % statuses.length];
+  saveStore(store);
+  renderDocHistory();
+  showToast(`상태가 "${r.status}"로 변경되었습니다.`);
+}
+
+// ═══════════════════════════════════
+//  FINANCE PAGES (generic excel upload → table)
+// ═══════════════════════════════════
+function setupFinPage(pageKey, inputId, tblId, dlBtnId, sampleHeaders, sampleRow) {
+  document.getElementById(inputId).addEventListener('change', function(e) {
+    const f = e.target.files[0]; if (!f) return;
+    readExcel(f, (data) => {
+      store.finData[pageKey] = data;
+      saveStore(store);
+      renderFinTable(tblId, data);
+      showToast('업로드되었습니다.', 'success');
+    });
+    this.value = '';
+  });
+  document.getElementById(dlBtnId).addEventListener('click', () => {
+    downloadExcel([sampleHeaders, sampleRow], pageKey + '_양식');
+  });
+  // restore
+  if (store.finData[pageKey]) renderFinTable(tblId, store.finData[pageKey]);
+}
+
+function renderFinTable(tblId, data) {
+  if (!data || !data.length) return;
+  const keys = Object.keys(data[0]);
+  const el = document.getElementById(tblId);
+  el.innerHTML = `<table>
+    <thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+    <tbody>${data.map(row=>`<tr>${keys.map(k=>`<td>${row[k]??''}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table>`;
+}
+
+setupFinPage('general','upload-fin-general','tbl-fin-general','btn-dl-fin-general',
+  ['항목','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','합계'],
+  ['급여',5000000,5000000,5100000,5100000,5200000,5200000,5200000,5300000,5300000,5300000,5400000,5400000,62500000]
+);
+setupFinPage('cost','upload-fin-cost','tbl-fin-cost','btn-dl-fin-cost',
+  ['항목','구분','금액','비율(%)','비고'],
+  ['인건비','직접','15000000','45.2','정규직']
+);
+setupFinPage('pl','upload-fin-pl','tbl-fin-pl','btn-dl-fin-pl',
+  ['항목','당월','전월','전년동월','증감액','증감율(%)'],
+  ['매출액',50000000,48000000,44000000,2000000,4.2]
+);
+
+// ═══════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════
+function fmtMoney(n) {
+  return Number(n||0).toLocaleString('ko-KR');
+}
+
+function num(v) {
+  return parseFloat(String(v||0).replace(/,/g,'')) || 0;
+}
+
+function readExcel(file, callback) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      callback(data);
+    } catch(err) {
+      showToast('파일을 읽을 수 없습니다.', 'error');
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function downloadExcel(rows, filename) {
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, filename + '.xlsx');
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = type === 'success' ? '✅ ' + msg : type === 'error' ? '❌ ' + msg : '💬 ' + msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+}));
+</script>
+</body>
+</html>
